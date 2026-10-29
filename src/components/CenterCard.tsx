@@ -4,6 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { imageFor, inr, type Center } from "@/lib/centers";
 
+/** Average rating, or "New" while a center has no reviews (rating 0). */
+export function RatingBadge({ rating }: { rating: number }) {
+  if (!rating) return <Badge variant="secondary" className="rounded-full">New</Badge>;
+  return <span className="flex items-center gap-1 text-sm font-medium"><Star className="h-4 w-4 fill-warning text-warning" />{rating}</span>;
+}
+
 export function CenterCard({ c }: { c: Center }) {
   return (
     <Link
@@ -19,7 +25,7 @@ export function CenterCard({ c }: { c: Center }) {
       <div className="space-y-2 p-5">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-lg font-semibold leading-tight">{c.name}</h3>
-          <span className="flex items-center gap-1 text-sm font-medium"><Star className="h-4 w-4 fill-warning text-warning" />{c.rating}</span>
+          <RatingBadge rating={c.rating} />
         </div>
         <p className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="h-4 w-4" />{c.city}</p>
         <div className="flex flex-wrap gap-1.5">

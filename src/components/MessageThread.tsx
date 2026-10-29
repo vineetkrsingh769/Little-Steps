@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -20,7 +20,26 @@ export function MessageThread({ bookingId, label, triggerLabel = "Messages" }: {
       if (error) throw error;
       return data;
     },
+    // Fallback in case the live connection drops.
+    refetchInterval: open ? 15000 : false,
   });
+
+  // New messages arrive live while the thread is open.
+  useEffect(() => {
+    if (!open) return;
+    const channel = supabase
+      .channel(`messages:${bookingId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `booking_id=eq.${bookingId}` },
+        () => qc.invalidateQueries({ queryKey: ["messages", bookingId] }),
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [open, bookingId, qc]);
+
+  const bottom = useRef<HTMLDivElement>(null);
+  useEffect(() => { bottom.current?.scrollIntoView({ block: "end" }); }, [messages.length]);
 
   const send = useMutation({
     mutationFn: async () => {
@@ -50,6 +69,7 @@ export function MessageThread({ bookingId, label, triggerLabel = "Messages" }: {
             </div>
           ))}
           {messages.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No messages yet. Say hello!</p>}
+          <div ref={bottom} />
         </div>
         <form className="flex gap-2 pt-2" onSubmit={(e) => { e.preventDefault(); if (body.trim()) send.mutate(); }}>
           <Input value={body} onChange={(e) => setBody(e.target.value)} required maxLength={1000} placeholder="Write a message…" aria-label="Message" />

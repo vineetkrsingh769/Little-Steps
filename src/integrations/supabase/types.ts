@@ -14,12 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_pickup_codes: {
+        Row: {
+          booking_id: string
+          code: string
+          created_at: string
+        }
+        Insert: {
+          booking_id: string
+          code: string
+          created_at?: string
+        }
+        Update: {
+          booking_id?: string
+          code?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_pickup_codes_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           age_group: string
           center_id: string
           child_name: string
           created_at: string
+          end_date: string
           id: string
           notes: string
           parent_id: string
@@ -35,6 +62,7 @@ export type Database = {
           center_id: string
           child_name: string
           created_at?: string
+          end_date?: string
           id?: string
           notes?: string
           parent_id: string
@@ -50,6 +78,7 @@ export type Database = {
           center_id?: string
           child_name?: string
           created_at?: string
+          end_date?: string
           id?: string
           notes?: string
           parent_id?: string
@@ -359,6 +388,10 @@ export type Database = {
       }
       is_booking_party: {
         Args: { _booking_id: string; _user_id: string }
+        Returns: boolean
+      }
+      verify_pickup_code: {
+        Args: { _booking_id: string; _code: string }
         Returns: boolean
       }
     }

@@ -28,13 +28,23 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
-  const [mode, setMode] = useState(search.mode ?? "signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(search.mode ?? "signin");
   const [type, setType] = useState<"parent" | "provider">(search.type ?? "parent");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+
+  async function sendReset(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else setResetSent(true);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +86,25 @@ function AuthPage() {
       </main>
     );
 
+  if (mode === "forgot")
+    return (
+      <main className="bg-hero min-h-[80vh] px-4 py-16">
+        <div className="mx-auto max-w-md space-y-5 rounded-[2rem] bg-card p-8 shadow-soft">
+          <h1 className="text-2xl font-bold">Reset your password</h1>
+          {resetSent ? (
+            <p className="text-muted-foreground">If an account exists for {email}, we've sent a link to set a new password. Check your inbox and spam folder.</p>
+          ) : (
+            <form onSubmit={sendReset} className="space-y-3">
+              <p className="text-sm text-muted-foreground">Enter your account email and we'll send you a reset link.</p>
+              <div className="space-y-1"><Label htmlFor="reset-email">Email</Label><Input id="reset-email" autoComplete="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+              <Button type="submit" variant="hero" size="lg" className="w-full" disabled={busy}>Send reset link</Button>
+            </form>
+          )}
+          <Button type="button" variant="link" className="h-auto p-0" onClick={() => { setMode("signin"); setResetSent(false); }}>← Back to sign in</Button>
+        </div>
+      </main>
+    );
+
   return (
     <main className="bg-hero min-h-[80vh] px-4 py-16">
       <div className="mx-auto max-w-md space-y-5 rounded-[2rem] bg-card p-8 shadow-soft">
@@ -94,6 +123,9 @@ function AuthPage() {
           {mode === "signup" && <div className="space-y-1"><Label htmlFor="full-name">Full name</Label><Input id="full-name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required /></div>}
           <div className="space-y-1"><Label htmlFor="email">Email</Label><Input id="email" autoComplete="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
           <div className="space-y-1"><Label htmlFor="password">Password</Label><Input id="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
+          {mode === "signin" && (
+            <Button type="button" variant="link" className="h-auto p-0 text-sm" onClick={() => setMode("forgot")}>Forgot password?</Button>
+          )}
           <Button type="submit" variant="hero" size="lg" className="w-full" disabled={busy}>{mode === "signup" ? "Create account" : "Sign in"}</Button>
         </form>
         <div className="flex items-center gap-3 text-xs text-muted-foreground"><div className="h-px flex-1 bg-border" />or<div className="h-px flex-1 bg-border" /></div>

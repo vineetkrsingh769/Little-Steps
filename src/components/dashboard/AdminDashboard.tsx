@@ -8,7 +8,7 @@ import { Empty, Stat, StatusBadge } from "./shared";
 
 export function AdminDashboard() {
   const qc = useQueryClient();
-  const { data: centers = [] } = useQuery({
+  const { data: centers = [], isError: centersError } = useQuery({
     queryKey: ["centers", "admin"],
     queryFn: async () => {
       const { data, error } = await supabase.from("centers").select("*").order("created_at", { ascending: false });
@@ -16,7 +16,7 @@ export function AdminDashboard() {
       return data;
     },
   });
-  const { data: caregivers = [] } = useQuery({
+  const { data: caregivers = [], isError: caregiversError } = useQuery({
     queryKey: ["caregivers", "admin"],
     queryFn: async () => {
       const { data, error } = await supabase.from("caregivers").select("*, centers(name)").eq("verified", false);
@@ -24,7 +24,7 @@ export function AdminDashboard() {
       return data;
     },
   });
-  const { data: bookings = [] } = useQuery({
+  const { data: bookings = [], isError: bookingsError } = useQuery({
     queryKey: ["bookings", "admin"],
     queryFn: async () => {
       const { data, error } = await supabase.from("bookings").select("*, centers(name)").order("created_at", { ascending: false });
@@ -32,7 +32,7 @@ export function AdminDashboard() {
       return data;
     },
   });
-  const { data: users = 0 } = useQuery({
+  const { data: users = 0, isError: usersError } = useQuery({
     queryKey: ["profiles", "count"],
     queryFn: async () => {
       const { count, error } = await supabase.from("profiles").select("*", { count: "exact", head: true });
@@ -65,6 +65,9 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-8">
+      {(centersError || caregiversError || bookingsError || usersError) && (
+        <p role="alert" className="rounded-3xl bg-destructive p-4 text-sm text-destructive-foreground">Some admin data couldn't load, so the lists below may be incomplete. Please refresh the page.</p>
+      )}
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <Stat label="Users" value={users} />
         <Stat label="Verified centers" value={centers.filter((c) => c.status === "approved").length} />

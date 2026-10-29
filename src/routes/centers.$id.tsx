@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Award, BadgeCheck, Clock, MapPin, ShieldCheck, Star, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { RatingBadge } from "@/components/CenterCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { AGE_GROUPS, PLANS, imageFor, inr, label, priceFor, type Center } from "@/lib/centers";
@@ -59,11 +60,11 @@ function CenterPage() {
             <div className="flex flex-wrap items-center gap-2">
               {c.is_24x7 && <Badge className="rounded-full">Open 24×7</Badge>}
               {c.status !== "approved" && <Badge variant="outline" className="rounded-full capitalize">{c.status}</Badge>}
-              <span className="flex items-center gap-1 text-sm font-medium"><Star className="h-4 w-4 fill-warning text-warning" />{c.rating}</span>
+              <RatingBadge rating={c.rating} />
               <FavoriteButton centerId={c.id} />
             </div>
             <h1 className="mt-3 text-3xl font-bold md:text-4xl">{c.name}</h1>
-            <p className="mt-2 flex items-center gap-1 text-muted-foreground"><MapPin className="h-4 w-4" />{c.address}, {c.city}</p>
+            <p className="mt-2 flex items-center gap-1 text-muted-foreground"><MapPin className="h-4 w-4" />{[c.address, c.city].filter(Boolean).join(", ")}</p>
             <Button asChild variant="outline" size="sm" className="mt-3">
               <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${c.name}, ${c.address}, ${c.city}`)}`} target="_blank" rel="noreferrer">
                 <MapPin className="h-4 w-4" /> Get directions
@@ -110,7 +111,9 @@ function Info({ icon: Icon, title, items }: { icon: typeof Clock; title: string;
   return (
     <div className="rounded-3xl bg-secondary p-5">
       <p className="mb-2 flex items-center gap-2 font-semibold"><Icon className="h-4 w-4 text-primary" />{title}</p>
-      <ul className="space-y-1 text-sm text-secondary-foreground">{items.map((i) => <li key={i}>• {i}</li>)}</ul>
+      {items.length > 0
+        ? <ul className="space-y-1 text-sm text-secondary-foreground">{items.map((i) => <li key={i}>• {i}</li>)}</ul>
+        : <p className="text-sm text-muted-foreground">Not listed yet</p>}
     </div>
   );
 }
@@ -226,9 +229,14 @@ function Reviews({ centerId }: { centerId: string }) {
   });
   const mine = reviews.find((r) => r.parent_id === user?.id);
   const canReview = !!user && completed.length > 0 && !mine;
+  const ref = useRef<HTMLDivElement>(null);
+  // "Leave a review" in My bookings links here with #reviews; scroll once the section has content.
+  useEffect(() => {
+    if (window.location.hash === "#reviews") ref.current?.scrollIntoView({ behavior: "smooth" });
+  }, [canReview, reviews.length]);
 
   return (
-    <div>
+    <div id="reviews" ref={ref} className="scroll-mt-24">
       <h2 className="mb-4 text-2xl font-bold">Reviews</h2>
       {canReview && <ReviewForm centerId={centerId} />}
       {mine && <p className="mb-4 rounded-3xl bg-secondary p-4 text-sm text-secondary-foreground">You already shared {mine.rating} star{mine.rating > 1 ? "s" : ""} for this center — thank you!</p>}

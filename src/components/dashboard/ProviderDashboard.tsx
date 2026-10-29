@@ -17,7 +17,7 @@ import { Empty, Stat, StatusBadge } from "./shared";
 export function ProviderDashboard() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { data: centers = [] } = useQuery({
+  const { data: centers = [], isError: centersError } = useQuery({
     queryKey: ["centers", "mine", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase.from("centers").select("*").eq("owner_id", user!.id).order("created_at");
@@ -26,7 +26,7 @@ export function ProviderDashboard() {
     },
   });
   const ids = centers.map((c) => c.id);
-  const { data: bookings = [] } = useQuery({
+  const { data: bookings = [], isError: bookingsError } = useQuery({
     queryKey: ["bookings", "provider", ids],
     enabled: ids.length > 0,
     queryFn: async () => {
@@ -44,6 +44,7 @@ export function ProviderDashboard() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const today = new Date().toLocaleDateString("en-CA"); // local YYYY-MM-DD
   const earnings = bookings.filter((b) => b.status === "accepted" || b.status === "completed").reduce((s, b) => s + b.total_price, 0);
 
   return (
@@ -60,7 +61,7 @@ export function ProviderDashboard() {
           <h2 className="text-xl font-semibold">My centers</h2>
           <CenterForm />
         </div>
-        {centers.length === 0 ? <Empty>Add your first center. It will go live once our team verifies it.</Empty> : (
+        {centersError ? <Empty>Couldn't load your centers. Please refresh the page.</Empty> : centers.length === 0 ? <Empty>Add your first center. It will go live once our team verifies it.</Empty> : (
           <div className="grid gap-4 md:grid-cols-2">
             {centers.map((c) => (
               <div key={c.id} className="space-y-3 rounded-3xl border bg-card p-5 shadow-card">
@@ -78,15 +79,15 @@ export function ProviderDashboard() {
 
       <section>
         <h2 className="mb-3 text-xl font-semibold">Booking requests</h2>
-        {bookings.length === 0 ? <Empty>No booking requests yet.</Empty> : (
+        {bookingsError ? <Empty>Couldn't load booking requests. Please refresh the page.</Empty> : bookings.length === 0 ? <Empty>No booking requests yet.</Empty> : (
           <div className="space-y-3">
             {bookings.map((b) => (
               <div key={b.id} className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border bg-card p-5 shadow-card">
                 <div>
                   <p className="font-semibold">{b.child_name} <span className="font-normal text-muted-foreground">· {b.age_group} · {b.centers?.name}</span></p>
-                  <p className="text-sm text-muted-foreground">{b.plan} × {b.quantity} · from {b.start_date} {b.start_time.slice(0, 5)}{b.notes ? ` · “${b.notes}”` : ""}</p>
+                  <p className="text-sm text-muted-foreground">{b.plan} × {b.quantity} · from {b.start_date} {b.start_time.slice(0, 5)}{b.end_date !== b.start_date && ` until ${b.end_date}`}{b.notes ? ` · “${b.notes}”` : ""}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-display font-semibold">{inr(b.total_price)}</span>
                   <StatusBadge s={b.status} />
                   <MessageThread bookingId={b.id} label={b.child_name} />
@@ -94,7 +95,10 @@ export function ProviderDashboard() {
                     <Button size="sm" variant="success" onClick={() => setStatus.mutate({ id: b.id, status: "accepted" })}>Accept</Button>
                     <Button size="sm" variant="outline" onClick={() => setStatus.mutate({ id: b.id, status: "rejected" })}>Reject</Button>
                   </>}
-                  {b.status === "accepted" && <Button size="sm" variant="secondary" onClick={() => setStatus.mutate({ id: b.id, status: "completed" })}>Mark done</Button>}
+                  {b.status === "accepted" && <PickupCheck bookingId={b.id} childName={b.child_name} />}
+                  {b.status === "accepted" && (today >= b.end_date
+                    ? <Button size="sm" variant="secondary" onClick={() => setStatus.mutate({ id: b.id, status: "completed" })}>Mark done</Button>
+                    : <span className="text-xs text-muted-foreground">Done after {b.end_date}</span>)}
                 </div>
               </div>
             ))}
@@ -102,6 +106,36 @@ export function ProviderDashboard() {
         )}
       </section>
     </div>
+  );
+}
+
+function PickupCheck({ bookingId, childName }: { bookingId: string; childName: string }) {
+  const [open, setOpen] = useState(false);
+  const [code, setCode] = useState("");
+  const check = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc("verify_pickup_code", { _booking_id: bookingId, _code: code });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (match) => {
+      if (match) { toast.success(`PIN matches — OK to hand over ${childName}`); setOpen(false); setCode(""); }
+      else toast.error("PIN doesn't match. Don't hand over the child — call the parent.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild><Button size="sm" variant="outline">Check PIN</Button></DialogTrigger>
+      <DialogContent className="max-w-sm">
+        <DialogHeader><DialogTitle>Check pickup PIN · {childName}</DialogTitle></DialogHeader>
+        <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); check.mutate(); }}>
+          <Label htmlFor={`pin-${bookingId}`}>PIN shown on the parent's pass</Label>
+          <Input id={`pin-${bookingId}`} inputMode="numeric" autoComplete="off" maxLength={4} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
+          <Button type="submit" variant="hero" className="w-full" disabled={check.isPending || code.length !== 4}>Check</Button>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -133,7 +167,14 @@ function CenterForm({ center }: { center?: Center }) {
         : await supabase.from("centers").insert({ ...row, owner_id: user!.id, image_key: `center-${1 + Math.floor(Math.random() * 4)}` });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success(center ? "Center updated" : "Center submitted for verification"); setOpen(false); qc.invalidateQueries({ queryKey: ["centers"] }); },
+    onSuccess: () => {
+      const needsReview = center?.status === "approved" && (
+        f.name !== center.name || f.address !== center.address || f.city !== center.city || list(f.certs).join() !== center.certifications.join()
+      );
+      toast.success(!center ? "Center submitted for verification" : needsReview ? "Saved — name, address, city or certification changes need admin re-approval" : "Center updated");
+      setOpen(false);
+      qc.invalidateQueries({ queryKey: ["centers"] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
   const num = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: Number(e.target.value) || 0 });
@@ -149,7 +190,7 @@ function CenterForm({ center }: { center?: Center }) {
             <div className="space-y-1"><Label>City</Label><Input required value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} /></div>
             <div className="space-y-1"><Label>Capacity / day</Label><Input type="number" min={1} value={f.capacity} onChange={num("capacity")} /></div>
           </div>
-          <div className="space-y-1"><Label>Address</Label><Input value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} /></div>
+          <div className="space-y-1"><Label>Address</Label><Input required value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} /></div>
           <div className="space-y-1"><Label>Description</Label><Textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
           <label className="flex items-center gap-2 text-sm"><Switch checked={f.is_24x7} onCheckedChange={(v) => setF({ ...f, is_24x7: v })} /> Open 24×7</label>
           <div className="flex flex-wrap gap-4 text-sm">{TIMINGS.map((t) => <label key={t.value} className="flex items-center gap-2"><Checkbox checked={f.timings.includes(t.value)} onCheckedChange={() => toggle("timings", t.value)} />{t.label}</label>)}</div>

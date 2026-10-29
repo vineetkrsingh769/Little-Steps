@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Baby, LogOut } from "lucide-react";
+import { Baby, LogOut, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +34,9 @@ export function SiteHeader() {
             <>
               <Button asChild variant="secondary" size="sm">
                 <Link to="/dashboard">Dashboard</Link>
+              </Button>
+              <Button asChild variant="ghost" size="icon" aria-label="My profile">
+                <Link to="/profile"><UserRound /></Link>
               </Button>
               <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
                 <LogOut />
