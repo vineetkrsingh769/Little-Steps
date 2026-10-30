@@ -14,7 +14,7 @@ import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthProvider } from "@/lib/auth";
 import { SiteHeader } from "@/components/SiteHeader";
-import { POLICY_LINKS } from "@/components/InfoPage";
+import { SiteFooter } from "@/components/SiteFooter";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -92,8 +92,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
-      { rel: "alternate icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg?v=3", type: "image/svg+xml" },
+      { rel: "alternate icon", href: "/favicon.ico?v=3", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
@@ -132,17 +132,12 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="min-h-screen">
-          <SiteHeader />
-          <Outlet />
-          <footer className="mt-20 border-t py-8 text-center text-sm text-muted-foreground">
-            <nav aria-label="Policies" className="mb-3 flex flex-wrap justify-center gap-x-5 gap-y-2">
-              {POLICY_LINKS.map((l) => (
-                <Link key={l.to} to={l.to} className="hover:text-foreground hover:underline">{l.label}</Link>
-              ))}
-            </nav>
-            © {new Date().getFullYear()} Little Steps · Safe, verified childcare around the clock
-          </footer>
+        <div className="min-h-screen flex flex-col justify-between">
+          <div>
+            <SiteHeader />
+            <Outlet />
+          </div>
+          <SiteFooter />
         </div>
         <Toaster richColors position="top-center" />
       </AuthProvider>

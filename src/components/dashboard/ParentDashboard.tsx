@@ -14,7 +14,7 @@ import { ChildrenTab } from "./ChildrenTab";
 import { SavedTab } from "./SavedTab";
 import { Empty, Stat, StatusBadge } from "./shared";
 
-export function ParentDashboard() {
+export function ParentDashboard({ activeTab }: { activeTab?: "bookings" | "children" | "saved" }) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const { data = [], isError } = useQuery({
@@ -45,12 +45,14 @@ export function ParentDashboard() {
   const subs = data.filter((b) => b.plan === "monthly" && b.status === "accepted");
 
   return (
-    <Tabs defaultValue="bookings">
-      <TabsList className="mb-6 flex-wrap">
-        <TabsTrigger value="bookings">My bookings</TabsTrigger>
-        <TabsTrigger value="children">My children</TabsTrigger>
-        <TabsTrigger value="saved">Saved</TabsTrigger>
-      </TabsList>
+    <Tabs value={activeTab ?? "bookings"}>
+      {!activeTab && (
+        <TabsList className="mb-6 flex-wrap">
+          <TabsTrigger value="bookings">My bookings</TabsTrigger>
+          <TabsTrigger value="children">My children</TabsTrigger>
+          <TabsTrigger value="saved">Saved</TabsTrigger>
+        </TabsList>
+      )}
       <TabsContent value="bookings">
         <div className="space-y-8">
           <div className="grid gap-4 sm:grid-cols-3">

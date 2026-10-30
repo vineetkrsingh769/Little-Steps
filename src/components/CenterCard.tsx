@@ -10,7 +10,18 @@ export function RatingBadge({ rating }: { rating: number }) {
   return <span className="flex items-center gap-1 text-sm font-medium"><Star className="h-4 w-4 fill-warning text-warning" />{rating}</span>;
 }
 
+/** Formats center names cleanly into proper title-case. */
+export function formatCenterName(name: string) {
+  return name
+    .toLowerCase()
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 export function CenterCard({ c }: { c: Center }) {
+  const formattedName = formatCenterName(c.name);
+
   return (
     <Link
       to="/centers/$id"
@@ -18,13 +29,13 @@ export function CenterCard({ c }: { c: Center }) {
       className="group overflow-hidden rounded-3xl border bg-card shadow-card transition hover:-translate-y-1 hover:shadow-soft"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img src={photoFor(c)} alt={c.name} loading="lazy" width={1024} height={768} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        <img src={photoFor(c)} alt={formattedName} loading="lazy" width={1024} height={768} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
         {c.is_24x7 && <Badge className="absolute left-3 top-3 rounded-full bg-primary text-primary-foreground">24×7</Badge>}
         <div className="absolute right-2 top-2"><FavoriteButton centerId={c.id} overlay /></div>
       </div>
       <div className="space-y-2 p-5">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-lg font-semibold leading-tight">{c.name}</h3>
+          <h3 className="text-lg font-semibold leading-tight">{formattedName}</h3>
           <RatingBadge rating={c.rating} />
         </div>
         <p className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="h-4 w-4" />{c.city}</p>

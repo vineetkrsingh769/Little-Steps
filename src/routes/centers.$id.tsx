@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FavoriteButton } from "@/components/FavoriteButton";
-import { RatingBadge } from "@/components/CenterCard";
+import { RatingBadge, formatCenterName } from "@/components/CenterCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { AGE_GROUPS, PLANS, inr, label, photoFor, priceFor, type Center } from "@/lib/centers";
@@ -63,7 +63,7 @@ function CenterPage() {
               <RatingBadge rating={c.rating} />
               <FavoriteButton centerId={c.id} />
             </div>
-            <h1 className="mt-3 text-3xl font-bold md:text-4xl">{c.name}</h1>
+            <h1 className="mt-3 text-3xl font-bold md:text-4xl">{formatCenterName(c.name)}</h1>
             <p className="mt-2 flex items-center gap-1 text-muted-foreground"><MapPin className="h-4 w-4" />{[c.address, c.city].filter(Boolean).join(", ")}</p>
             <Button asChild variant="outline" size="sm" className="mt-3">
               <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${c.name}, ${c.address}, ${c.city}`)}`} target="_blank" rel="noreferrer">
@@ -175,9 +175,17 @@ function BookingCard({ c }: { c: Center }) {
           </button>
         ))}
       </div>
-      {seats != null && (
-        <p role="status" className={`rounded-2xl px-4 py-2 text-sm font-medium ${full ? "bg-destructive text-destructive-foreground" : "bg-secondary text-secondary-foreground"}`}>
-          {full ? "Full for these dates — try another date" : `${seats} of ${c.capacity} seats free for these dates`}
+      {c.status !== "approved" ? (
+        <p role="status" className="rounded-2xl bg-warning/20 px-4 py-2 text-sm font-medium text-warning-foreground">
+          This center is awaiting administrator approval.
+        </p>
+      ) : !date ? (
+        <p role="status" className="rounded-2xl bg-secondary px-4 py-2 text-sm font-medium text-muted-foreground">
+          📅 Choose a start date to check live seat availability
+        </p>
+      ) : seats != null && (
+        <p role="status" className={`rounded-2xl px-4 py-2 text-sm font-medium ${full ? "bg-destructive text-destructive-foreground" : "bg-success/15 text-success font-semibold"}`}>
+          {full ? "⚠️ Fully booked for these dates — please try another date" : `✓ ${seats} of ${c.capacity} seats available for these dates`}
         </p>
       )}
       {!user ? (
