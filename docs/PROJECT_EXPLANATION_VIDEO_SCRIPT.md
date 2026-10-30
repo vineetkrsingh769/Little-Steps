@@ -161,3 +161,4 @@ Before hitting record:
 2. **Cursor Movement:** Move your mouse smoothly. Hover over buttons before clicking them so the viewer's eyes can follow.
 3. **Dual Windows:** Having Window 1 (Parent/Admin) and Window 2 (Daycare Provider in Incognito) ready side-by-side makes the two-sided demo look effortless and realistic.
 4. **Emphasize DB Triggers:** Interviewers and senior engineers love hearing that capacity and pricing are enforced by database triggers rather than trusted from the client. Make sure to stress this in Part 5!
+
