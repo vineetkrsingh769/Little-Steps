@@ -13,7 +13,7 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import { RatingBadge } from "@/components/CenterCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { AGE_GROUPS, PLANS, imageFor, inr, label, priceFor, type Center } from "@/lib/centers";
+import { AGE_GROUPS, PLANS, inr, label, photoFor, priceFor, type Center } from "@/lib/centers";
 
 export const Route = createFileRoute("/centers/$id")({
   head: () => ({
@@ -55,7 +55,7 @@ function CenterPage() {
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-8">
-          <img src={imageFor(c.image_key, c.id)} alt={c.name} width={1024} height={768} className="aspect-[16/9] w-full rounded-[2rem] object-cover shadow-soft" />
+          <img src={photoFor(c)} alt={c.name} width={1024} height={768} className="aspect-[16/9] w-full rounded-[2rem] object-cover shadow-soft" />
           <div>
             <div className="flex flex-wrap items-center gap-2">
               {c.is_24x7 && <Badge className="rounded-full">Open 24×7</Badge>}
@@ -139,6 +139,17 @@ function BookingCard({ c }: { c: Center }) {
   const [age, setAge] = useState(c.age_groups[0] ?? "toddler");
   const [notes, setNotes] = useState("");
   const unit = PLANS.find((p) => p.value === plan)?.unit ?? "hours";
+  // Free seats on the busiest day of the chosen dates (counts accepted bookings only).
+  const { data: seats } = useQuery({
+    queryKey: ["seats", c.id, plan, date, qty],
+    enabled: c.status === "approved" && !!date,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("seats_left", { _center_id: c.id, _plan: plan, _start: date, _quantity: qty });
+      if (error) throw error;
+      return data;
+    },
+  });
+  const full = seats === 0;
 
   const book = useMutation({
     mutationFn: async () => {
@@ -164,6 +175,11 @@ function BookingCard({ c }: { c: Center }) {
           </button>
         ))}
       </div>
+      {seats != null && (
+        <p role="status" className={`rounded-2xl px-4 py-2 text-sm font-medium ${full ? "bg-destructive text-destructive-foreground" : "bg-secondary text-secondary-foreground"}`}>
+          {full ? "Full for these dates — try another date" : `${seats} of ${c.capacity} seats free for these dates`}
+        </p>
+      )}
       {!user ? (
         <Button asChild variant="hero" size="lg" className="w-full"><Link to="/auth">Sign in to book</Link></Button>
       ) : (
@@ -199,7 +215,7 @@ function BookingCard({ c }: { c: Center }) {
           <div className="flex items-center justify-between rounded-2xl bg-accent px-4 py-3 text-accent-foreground">
             <span>Estimated total</span><span className="font-display text-xl font-bold">{inr(priceFor(c, plan, qty))}</span>
           </div>
-          <Button type="submit" variant="hero" size="lg" className="w-full" disabled={book.isPending || c.status !== "approved"}>
+          <Button type="submit" variant="hero" size="lg" className="w-full" disabled={book.isPending || c.status !== "approved" || full}>
             {book.isPending ? "Sending…" : "Request booking"}
           </Button>
         </form>

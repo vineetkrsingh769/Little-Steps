@@ -157,6 +157,7 @@ export type Database = {
           monthly_price: number
           name: string
           owner_id: string | null
+          photo_path: string | null
           rating: number
           safety_measures: string[]
           status: string
@@ -178,6 +179,7 @@ export type Database = {
           monthly_price?: number
           name: string
           owner_id?: string | null
+          photo_path?: string | null
           rating?: number
           safety_measures?: string[]
           status?: string
@@ -199,6 +201,7 @@ export type Database = {
           monthly_price?: number
           name?: string
           owner_id?: string | null
+          photo_path?: string | null
           rating?: number
           safety_measures?: string[]
           status?: string
@@ -235,6 +238,57 @@ export type Database = {
           parent_id?: string
         }
         Relationships: []
+      }
+      disputes: {
+        Row: {
+          admin_note: string
+          booking_id: string
+          created_at: string
+          details: string
+          id: string
+          reason: string
+          reporter_id: string
+          resolved_at: string | null
+          status: string
+        }
+        Insert: {
+          admin_note?: string
+          booking_id: string
+          created_at?: string
+          details: string
+          id?: string
+          reason: string
+          reporter_id: string
+          resolved_at?: string | null
+          status?: string
+        }
+        Update: {
+          admin_note?: string
+          booking_id?: string
+          created_at?: string
+          details?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       favorites: {
         Row: {
@@ -379,6 +433,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      booking_end_date: {
+        Args: { _plan: string; _quantity: number; _start: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -389,6 +447,10 @@ export type Database = {
       is_booking_party: {
         Args: { _booking_id: string; _user_id: string }
         Returns: boolean
+      }
+      seats_left: {
+        Args: { _center_id: string; _plan: string; _quantity: number; _start: string }
+        Returns: number
       }
       verify_pickup_code: {
         Args: { _booking_id: string; _code: string }

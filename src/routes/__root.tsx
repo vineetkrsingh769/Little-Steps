@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthProvider } from "@/lib/auth";
 import { SiteHeader } from "@/components/SiteHeader";
+import { POLICY_LINKS } from "@/components/InfoPage";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -134,6 +135,11 @@ function RootComponent() {
           <SiteHeader />
           <Outlet />
           <footer className="mt-20 border-t py-8 text-center text-sm text-muted-foreground">
+            <nav aria-label="Policies" className="mb-3 flex flex-wrap justify-center gap-x-5 gap-y-2">
+              {POLICY_LINKS.map((l) => (
+                <Link key={l.to} to={l.to} className="hover:text-foreground hover:underline">{l.label}</Link>
+              ))}
+            </nav>
             © {new Date().getFullYear()} Little Steps · Safe, verified childcare around the clock
           </footer>
         </div>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageThread } from "@/components/MessageThread";
 import { PickupPass } from "@/components/PickupPass";
+import { ReportProblem } from "@/components/ReportProblem";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { inr } from "@/lib/centers";
@@ -77,6 +78,7 @@ export function ParentDashboard() {
                       <StatusBadge s={b.status} />
                       {b.status === "accepted" && <PickupPass b={b} center={b.centers} />}
                       <MessageThread bookingId={b.id} label={b.centers?.name ?? "center"} />
+                      <ReportProblem bookingId={b.id} label={b.centers?.name ?? "center"} />
                       {b.status === "completed" && !reviewed.includes(b.center_id) && (
                         <Button asChild size="sm" variant="secondary">
                           <Link to="/centers/$id" params={{ id: b.center_id }} hash="reviews"><Star className="h-4 w-4" /> Leave a review</Link>

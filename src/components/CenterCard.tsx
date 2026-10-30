@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Clock, MapPin, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { FavoriteButton } from "@/components/FavoriteButton";
-import { imageFor, inr, type Center } from "@/lib/centers";
+import { inr, photoFor, type Center } from "@/lib/centers";
 
 /** Average rating, or "New" while a center has no reviews (rating 0). */
 export function RatingBadge({ rating }: { rating: number }) {
@@ -18,7 +18,7 @@ export function CenterCard({ c }: { c: Center }) {
       className="group overflow-hidden rounded-3xl border bg-card shadow-card transition hover:-translate-y-1 hover:shadow-soft"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img src={imageFor(c.image_key, c.id)} alt={c.name} loading="lazy" width={1024} height={768} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        <img src={photoFor(c)} alt={c.name} loading="lazy" width={1024} height={768} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
         {c.is_24x7 && <Badge className="absolute left-3 top-3 rounded-full bg-primary text-primary-foreground">24×7</Badge>}
         <div className="absolute right-2 top-2"><FavoriteButton centerId={c.id} overlay /></div>
       </div>

@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 
 const tone: Record<string, string> = {
   pending: "bg-warning text-warning-foreground",
+  open: "bg-warning text-warning-foreground",
+  resolved: "bg-secondary text-secondary-foreground",
   accepted: "bg-success text-success-foreground",
   approved: "bg-success text-success-foreground",
   completed: "bg-secondary text-secondary-foreground",

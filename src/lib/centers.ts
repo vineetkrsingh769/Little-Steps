@@ -6,6 +6,7 @@ import c5 from "@/assets/center-5.jpg";
 import c6 from "@/assets/center-6.jpg";
 import c7 from "@/assets/center-7.jpg";
 import c8 from "@/assets/center-8.jpg";
+import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 export type Center = Database["public"]["Tables"]["centers"]["Row"];
@@ -30,6 +31,10 @@ export const imageFor = (key: string, id?: string) => {
   for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return allImages[h % allImages.length];
 };
+
+/** The center's uploaded photo if it has one, otherwise a bundled sample photo. */
+export const photoFor = (c: Pick<Center, "id" | "image_key" | "photo_path">) =>
+  c.photo_path ? supabase.storage.from("center-photos").getPublicUrl(c.photo_path).data.publicUrl : imageFor(c.image_key, c.id);
 
 export const AGE_GROUPS = [
   { value: "infant", label: "Infant (0–1 yr)" },

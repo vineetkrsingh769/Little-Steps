@@ -9,9 +9,11 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MessageThread } from "@/components/MessageThread";
+import { ReportProblem } from "@/components/ReportProblem";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { AGE_GROUPS, TIMINGS, inr, type Center } from "@/lib/centers";
+import { ProviderCharts } from "./ProviderCharts";
 import { Empty, Stat, StatusBadge } from "./shared";
 
 export function ProviderDashboard() {
@@ -56,6 +58,8 @@ export function ProviderDashboard() {
         <Stat label="Earnings" value={inr(earnings)} />
       </div>
 
+      {bookings.length > 0 && <ProviderCharts bookings={bookings} />}
+
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-xl font-semibold">My centers</h2>
@@ -91,6 +95,7 @@ export function ProviderDashboard() {
                   <span className="font-display font-semibold">{inr(b.total_price)}</span>
                   <StatusBadge s={b.status} />
                   <MessageThread bookingId={b.id} label={b.child_name} />
+                  <ReportProblem bookingId={b.id} label={b.child_name} />
                   {b.status === "pending" && <>
                     <Button size="sm" variant="success" onClick={() => setStatus.mutate({ id: b.id, status: "accepted" })}>Accept</Button>
                     <Button size="sm" variant="outline" onClick={() => setStatus.mutate({ id: b.id, status: "rejected" })}>Reject</Button>
@@ -154,6 +159,7 @@ function CenterForm({ center }: { center?: Center }) {
   const toggle = (k: "timings" | "age_groups", v: string) =>
     setF({ ...f, [k]: f[k].includes(v) ? f[k].filter((x) => x !== v) : [...f[k], v] });
 
+  const [photo, setPhoto] = useState<File | null>(null);
   const save = useMutation({
     mutationFn: async () => {
       const row = {
@@ -162,10 +168,19 @@ function CenterForm({ center }: { center?: Center }) {
         hourly_price: f.hourly_price, daily_price: f.daily_price, monthly_price: f.monthly_price,
         safety_measures: list(f.safety), certifications: list(f.certs),
       };
-      const { error } = center
-        ? await supabase.from("centers").update(row).eq("id", center.id)
-        : await supabase.from("centers").insert({ ...row, owner_id: user!.id, image_key: `center-${1 + Math.floor(Math.random() * 4)}` });
+      const { data: saved, error } = center
+        ? await supabase.from("centers").update(row).eq("id", center.id).select("id").single()
+        : await supabase.from("centers").insert({ ...row, owner_id: user!.id, image_key: `center-${1 + Math.floor(Math.random() * 4)}` }).select("id").single();
       if (error) throw error;
+      if (photo) {
+        // Photos live in the center's own folder; the database only accepts paths inside it.
+        const path = `${saved.id}/${Date.now()}.${photo.name.split(".").pop()?.toLowerCase() || "jpg"}`;
+        const up = await supabase.storage.from("center-photos").upload(path, photo, { contentType: photo.type });
+        if (up.error) throw new Error(`Center saved, but the photo didn't upload: ${up.error.message}`);
+        const { error: photoError } = await supabase.from("centers").update({ photo_path: path }).eq("id", saved.id);
+        if (photoError) throw photoError;
+        if (center?.photo_path) await supabase.storage.from("center-photos").remove([center.photo_path]);
+      }
     },
     onSuccess: () => {
       const needsReview = center?.status === "approved" && (
@@ -173,6 +188,7 @@ function CenterForm({ center }: { center?: Center }) {
       );
       toast.success(!center ? "Center submitted for verification" : needsReview ? "Saved — name, address, city or certification changes need admin re-approval" : "Center updated");
       setOpen(false);
+      setPhoto(null);
       qc.invalidateQueries({ queryKey: ["centers"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -202,6 +218,15 @@ function CenterForm({ center }: { center?: Center }) {
           </div>
           <div className="space-y-1"><Label>Safety measures (comma separated)</Label><Input value={f.safety} onChange={(e) => setF({ ...f, safety: e.target.value })} /></div>
           <div className="space-y-1"><Label>Certifications (comma separated)</Label><Input value={f.certs} onChange={(e) => setF({ ...f, certs: e.target.value })} /></div>
+          <div className="space-y-1">
+            <Label htmlFor={`photo-${center?.id ?? "new"}`}>{center?.photo_path ? "Replace photo" : "Center photo"}</Label>
+            <Input id={`photo-${center?.id ?? "new"}`} type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              if (file && file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5 MB"); e.target.value = ""; return; }
+              setPhoto(file);
+            }} />
+            <p className="text-xs text-muted-foreground">JPG, PNG or WebP, up to 5 MB. A bright photo of your play area works best.</p>
+          </div>
           <Button type="submit" variant="hero" className="w-full" disabled={save.isPending}>Save</Button>
         </form>
       </DialogContent>
