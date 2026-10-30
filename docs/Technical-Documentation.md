@@ -187,3 +187,4 @@ The project maintains an automated multi-tier test harness:
 - **Hosting Platform:** Vercel edge deployment.
 - **Build Command:** `npm run build` (outputs optimized SSR and client bundles via Vite & Nitro).
 - **Environment Isolation:** Zero credentials checked into Git; `.env` keys managed securely via Vercel Environment Variables.
+

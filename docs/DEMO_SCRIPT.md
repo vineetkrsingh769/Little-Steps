@@ -89,3 +89,4 @@ Use this guide to record your project demo video or deliver your live presentati
 - **Resolution:** 1080p (Full HD) in 16:9 aspect ratio.
 - **Microphone:** Keep voice clear, paced, and confident.
 - **Browser:** Close unnecessary tabs; keep one normal browser window (Admin/Parent) and one incognito window (Daycare) ready side-by-side.
+

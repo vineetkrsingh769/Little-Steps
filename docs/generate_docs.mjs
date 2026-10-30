@@ -105,3 +105,4 @@ const techHtml = mdToHtml(techMd, "Little Steps - Technical Documentation");
 writeFileSync("docs/Technical-Documentation.html", techHtml);
 
 console.log("HTML docs generated successfully.");
+

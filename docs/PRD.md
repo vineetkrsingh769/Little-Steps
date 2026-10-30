@@ -137,3 +137,4 @@ Historically, the childcare market in India operates offline with significant pa
 ## 9. Conclusion
 
 The Little Steps platform successfully digitizes and standardizes childcare discovery, booking, and safety. By pairing consumer-friendly design with strict database constraints, it delivers an internship-winning, production-ready solution that solves real challenges for working families across India.
+
