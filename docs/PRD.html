@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Little Steps - PRD</title>
+  <style>
+    @page { margin: 20mm 15mm; size: A4; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #1e293b;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 { color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; font-size: 24pt; margin-top: 0; }
+    h2 { color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; font-size: 16pt; margin-top: 24pt; }
+    h3 { color: #1d4ed8; font-size: 13pt; margin-top: 16pt; }
+    p, li { font-size: 10.5pt; color: #334155; }
+    li { margin-bottom: 4px; }
+    code { font-family: Consolas, monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 9.5pt; color: #0f172a; }
+    pre { background: #0f172a; color: #f8fafc; padding: 14px; border-radius: 8px; overflow-x: auto; font-size: 9pt; }
+    pre code { background: none; color: inherit; padding: 0; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 10pt; }
+    th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+    tr:nth-child(even) { background-color: #f8fafc; }
+    tr:first-child { background-color: #e2e8f0; font-weight: bold; }
+    blockquote { border-left: 4px solid #3b82f6; padding-left: 12px; margin-left: 0; color: #475569; }
+    hr { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <h1>Product Requirements Document (PRD)</h1>
+<h2>Little Steps — Trusted 24×7 Childcare & Daycare Platform</h2>
+<p><strong>Project:</strong> Little Steps  </p>
+<p><strong>Author / Developer:</strong> Vineet Kumar Singh  </p>
+<p><strong>Academic / Organization Context:</strong> Unified Mentor Internship Project  </p>
+<p><strong>Date:</strong> October 30, 2026  </p>
+<p><strong>Status:</strong> Complete & Deployment Ready  </p>
+<p><strong>Live URL:</strong> <a href="https://little-steps-blue.vercel.app">https://little-steps-blue.vercel.app</a>  </p>
+<p><strong>Repository:</strong> <a href="https://github.com/vineetkrsingh769/Little-Steps">https://github.com/vineetkrsingh769/Little-Steps</a>  </p>
+<hr/>
+<h2>1. Executive Summary</h2>
+<p>With increasing numbers of dual-income families, shift-based jobs (IT/ITES, healthcare, hospitality, aviation), single parents, and nuclear family structures across tier-1 and tier-2 Indian cities, there is an urgent demand for safe, flexible, and round-the-clock childcare solutions. </p>
+<p>Parents routinely struggle to identify trustworthy crèches that offer real-time availability, verified caregivers, transparent pricing, and emergency support. Simultaneously, daycare operators face administrative overhead, poor off-peak utilization, and lack of digital record-keeping.</p>
+<p><strong>Little Steps</strong> is a full-stack digital web platform connecting parents with verified childcare centers and crèches offering 24×7 daycare, hourly emergency care, and monthly subscription plans. The platform incorporates strict safety guards: database-enforced capacity checks preventing overbooking, admin-gated provider approvals, secret pickup authentication PINs, and tamper-proof review tracking.</p>
+<hr/>
+<h2>2. Problem Statement</h2>
+<p>Historically, the childcare market in India operates offline with significant pain points:</p>
+<p>1. <strong>Opaque Availability:</strong> Parents must make repetitive phone calls to check whether seats are open for a specific date or night shift.</p>
+<p>2. <strong>Safety & Verification Deficit:</strong> Lack of centralized background checks or verified credentials for crèche staff and centers.</p>
+<p>3. <strong>Inflexible Timings:</strong> Traditional daycares operate strictly on fixed business hours (e.g., 9:00 AM – 6:00 PM), leaving night-shift workers with no viable options.</p>
+<p>4. <strong>Arbitrary Pricing:</strong> Pricing structures are rarely public, leading to price variations, hidden fees, or lack of receipts.</p>
+<p>5. <strong>Pickup Vulnerability:</strong> Lack of standardized verification protocols during child handover at pickup time.</p>
+<hr/>
+<h2>3. Product Vision & Objectives</h2>
+<h3>3.1 Primary Objectives</h3>
+<li><strong>Trusted 24×7 Access:</strong> Provide a searchable, transparent digital marketplace for crèches and daycares supporting day, night, and emergency shifts.</li>
+<li><strong>Strict Verification Standards:</strong> Enforce mandatory administrative verification of every daycare and caregiver profile prior to public discovery.</li>
+<li><strong>Zero-Tamper Capacity Management:</strong> Ensure automated overbooking prevention across hourly, daily, and overlapping multi-week/monthly plans.</li>
+<li><strong>Child Handover Security:</strong> Introduce cryptographic 4-digit digital pickup codes shared only with parents and verified by providers on arrival.</li>
+<h3>3.2 Secondary Objectives</h3>
+<li><strong>Dynamic Capacity Utilization:</strong> Enable daycare facilities to monetize idle slots during off-peak and night hours.</li>
+<li><strong>Flexible Plans:</strong> Accommodate hourly drop-offs, multi-day packages, and monthly recurring subscriptions.</li>
+<li><strong>Community Accountability:</strong> Allow honest, two-way feedback and verifiable reviews strictly from parents with completed bookings.</li>
+<hr/>
+<h2>4. User Personas & Target Stakeholders</h2>
+<table>
+<tr><td>Persona</td><td>Role</td><td>Key Needs & Behaviors</td></tr>
+<tr><td><strong>Priya (Working Mother)</strong></td><td>Parent</td><td>Works rotational night shifts in IT; needs certified overnight crèches with verified caregivers, clear pricing, and emergency contact.</td></tr>
+<tr><td><strong>Rajesh (Daycare Director)</strong></td><td>Childcare Provider</td><td>Manages a center; needs clear visibility into daily occupancy, upcoming booking requests, caregiver profiles, and revenue tracking.</td></tr>
+<tr><td><strong>Platform Administrator</strong></td><td>Governance & Admin</td><td>Inspects licenses and certifications; verifies caregiver backgrounds; monitors platform disputes, capacity utilization, and system metrics.</td></tr>
+</table>
+<hr/>
+<h2>5. Scope of Work</h2>
+<h3>5.1 In-Scope (Phase 1 Deliverables)</h3>
+<li><strong>Responsive Web Application:</strong> Mobile-first user experience built with React and Tailwind CSS.</li>
+<li><strong>Three Distinct Role Portals:</strong> Dedicated user experiences for Parents, Childcare Providers, and Platform Admins.</li>
+<li><strong>Discovery & Search Filters:</strong> Filter by city, 24×7 operation, child age group (Infant, Toddler, Preschool), and timing shifts.</li>
+<li><strong>Booking & Availability Engine:</strong> Real-time seat availability calculation (<code>seats_left</code>) and booking request workflow.</li>
+<li><strong>Handover Security:</strong> Digital Pickup Pass with parent-only secret PIN verified by centers via secure server RPC.</li>
+<li><strong>Direct Communication:</strong> Real-time in-app messaging between parents and providers per booking.</li>
+<li><strong>Trust & Reviews:</strong> 1–5 star ratings and reviews unlocked only after a booking is completed.</li>
+<li><strong>Issue Resolution:</strong> Dedicated "Report a Problem" dispute logging and admin resolution system.</li>
+<li><strong>Comprehensive Policy Pages:</strong> Integrated Safety Policy, Privacy (DPDP Act aligned), Terms of Service, Refunds, and Contact.</li>
+<h3>5.2 Out-of-Scope (Deferred to Future Releases)</h3>
+<li>Native iOS / Android apps (Current system provides full mobile web / PWA compatibility).</li>
+<li>Live CCTV camera streaming feeds (Requires dedicated IoT hardware integration).</li>
+<li>Real-time GPS vehicle tracking for school pickups.</li>
+<hr/>
+<h2>6. Functional Requirements Matrix</h2>
+<h3>6.1 Parent Experience</h3>
+<li><strong>Authentication:</strong> Email & Password registration and Google OAuth sign-in.</li>
+<li><strong>Center Exploration:</strong> Instant search with live filters for city, 24×7 availability, shifts (day/night/emergency), and age group.</li>
+<li><strong>Detailed Center Page:</strong> High-resolution photos, caregiver bios with verification badges, safety protocols, certifications, and fee breakdowns.</li>
+<li><strong>Seat Availability:</strong> Real-time dynamic seat calculation displaying seats remaining for selected dates.</li>
+<li><strong>Saved Favorites:</strong> One-click heart icon to save favorite centers for quick booking.</li>
+<li><strong>Child Profiles:</strong> Add child details (name, age group, special medical/dietary notes) to auto-populate bookings.</li>
+<li><strong>Booking Lifecycle:</strong> Send booking requests, monitor status (<code>pending</code>, <code>accepted</code>, <code>rejected</code>, <code>completed</code>, <code>cancelled</code>).</li>
+<li><strong>Digital Pickup Pass:</strong> Access 4-digit secure handover PIN and one-click Google Maps directions.</li>
+<li><strong>Direct Messaging:</strong> Live chat with daycare coordinators regarding special instructions.</li>
+<h3>6.2 Daycare Provider Experience</h3>
+<li><strong>Center Profile Management:</strong> Create and edit facility profiles, age capacities, pricing tiers (hourly, daily, monthly), safety protocols, and certifications.</li>
+<li><strong>Facility Photo Upload:</strong> Upload facility images directly to secure Supabase Storage (<code>center-photos</code>).</li>
+<li><strong>Caregiver Roster:</strong> Add staff profiles, experience years, and roles awaiting admin verification.</li>
+<li><strong>Request Management:</strong> Accept or reject incoming booking requests with automatic capacity validation.</li>
+<li><strong>Pickup Verification:</strong> Verify parent pickup PINs via numeric keypad dialog without ever seeing the secret PIN directly.</li>
+<li><strong>Operational Analytics:</strong> Visual chart breakdown of monthly earnings and bookings categorized by status.</li>
+<h3>6.3 Platform Admin Experience</h3>
+<li><strong>Verification Queue:</strong> Review and approve/reject newly registered daycare centers.</li>
+<li><strong>Caregiver Verification:</strong> Audit and toggle official verification badges for staff.</li>
+<li><strong>Platform Analytics & KPIs:</strong></li>
+<p>  - Total registered users</p>
+<p>  - Verified centers and active providers</p>
+<p>  - Overall booking conversion rate (%)</p>
+<p>  - Monthly subscription adoption (%)</p>
+<p>  - Real-time center utilization today (%)</p>
+<p>  - Average platform review rating</p>
+<p>  - Total booking volume and revenue</p>
+<li><strong>Dispute Resolution:</strong> Full grievance management interface to inspect parental complaints, enter resolution notes, and close disputes.</li>
+<hr/>
+<h2>7. Non-Functional Requirements</h2>
+<li><strong>Overbooking Guarantee:</strong> Overlapping date queries across multi-day and monthly bookings prevent accepting bookings past maximum capacity.</li>
+<li><strong>Response Times:</strong> Page load times under 2.5 seconds on mobile 4G networks; dynamic seat lookups under 300ms.</li>
+<li><strong>Data Protection & Privacy:</strong> User data encrypted in transit (TLS 1.3) and at rest (AES-256 via Supabase). Row-Level Security (RLS) ensures zero cross-tenant data leakage.</li>
+<li><strong>Compliance:</strong> Designed in alignment with India's <strong>Digital Personal Data Protection (DPDP) Act, 2023</strong> (explicit consent, purpose specification, and data deletion mechanisms).</li>
+<hr/>
+<h2>8. Success Metrics & KPIs</h2>
+<table>
+<tr><td>Metric</td><td>Target</td><td>How Measured</td></tr>
+<tr><td><strong>Booking Conversion Rate</strong></td><td>> 65%</td><td>Accepted Bookings / Total Requests</td></tr>
+<tr><td><strong>Overbooking Incidents</strong></td><td>0%</td><td>Enforced by Postgres database trigger</td></tr>
+<tr><td><strong>Caregiver Verification Rate</strong></td><td>100%</td><td>Verified Caregivers / Total Listed</td></tr>
+<tr><td><strong>Dispute Resolution Time</strong></td><td>< 24 Hours</td><td>Tracked via Admin Disputes Queue</td></tr>
+<tr><td><strong>Facility Utilization Rate</strong></td><td>> 70%</td><td>Daily Occupied Seats / Total Registered Capacity</td></tr>
+</table>
+<hr/>
+<h2>9. Conclusion</h2>
+<p>The Little Steps platform successfully digitizes and standardizes childcare discovery, booking, and safety. By pairing consumer-friendly design with strict database constraints, it delivers an internship-winning, production-ready solution that solves real challenges for working families across India.</p>
+</body>
+</html>

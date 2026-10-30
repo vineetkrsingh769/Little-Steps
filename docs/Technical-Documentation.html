@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Little Steps - Technical Documentation</title>
+  <style>
+    @page { margin: 20mm 15mm; size: A4; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #1e293b;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 { color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; font-size: 24pt; margin-top: 0; }
+    h2 { color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; font-size: 16pt; margin-top: 24pt; }
+    h3 { color: #1d4ed8; font-size: 13pt; margin-top: 16pt; }
+    p, li { font-size: 10.5pt; color: #334155; }
+    li { margin-bottom: 4px; }
+    code { font-family: Consolas, monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 9.5pt; color: #0f172a; }
+    pre { background: #0f172a; color: #f8fafc; padding: 14px; border-radius: 8px; overflow-x: auto; font-size: 9pt; }
+    pre code { background: none; color: inherit; padding: 0; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 10pt; }
+    th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+    tr:nth-child(even) { background-color: #f8fafc; }
+    tr:first-child { background-color: #e2e8f0; font-weight: bold; }
+    blockquote { border-left: 4px solid #3b82f6; padding-left: 12px; margin-left: 0; color: #475569; }
+    hr { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <h1>Technical Architecture & Engineering Documentation</h1>
+<h2>Little Steps — Trusted 24×7 Childcare & Daycare Platform</h2>
+<p><strong>System:</strong> Little Steps  </p>
+<p><strong>Author / Developer:</strong> Vineet Kumar Singh  </p>
+<p><strong>Academic / Organization Context:</strong> Unified Mentor Internship Project  </p>
+<p><strong>Date:</strong> October 30, 2026  </p>
+<p><strong>Revision:</strong> 2.0 (Post-Lovable Standalone Production Stack)  </p>
+<p><strong>Live Site:</strong> <a href="https://little-steps-blue.vercel.app">https://little-steps-blue.vercel.app</a>  </p>
+<p><strong>Git Repository:</strong> <a href="https://github.com/vineetkrsingh769/Little-Steps">https://github.com/vineetkrsingh769/Little-Steps</a>  </p>
+<hr/>
+<h2>1. System Overview & Engineering Philosophy</h2>
+<p>Little Steps is engineered as an enterprise-grade, serverless web application emphasizing <strong>database-driven integrity</strong>. Unlike conventional web applications where business invariants (such as capacity constraints, authorization checks, and pricing calculation) reside solely in the client or middle-tier web servers, Little Steps guarantees data consistency directly at the database engine tier through PostgreSQL triggers, security definer stored procedures, and fine-grained Row-Level Security (RLS) policies.</p>
+<p>This architectural decision ensures that even in edge cases of network retries, race conditions, or unauthorized API calls, <strong>overbooking is mathematically impossible</strong>, pricing cannot be tampered with, and private credentials (like pickup PINs) are never exposed.</p>
+<hr/>
+<h2>2. Technology Stack</h2>
+<table>
+<tr><td>Layer</td><td>Technology</td><td>Selection Rationale</td></tr>
+<tr><td><strong>Frontend Framework</strong></td><td><strong>TanStack Start (React 19)</strong></td><td>Full-stack React with file-based routing, type-safe data loading, and instant client hydration.</td></tr>
+<tr><td><strong>Styling & UI Design</strong></td><td><strong>Tailwind CSS + Radix UI</strong></td><td>Accessible, responsive, mobile-first design system with zero runtime CSS overhead.</td></tr>
+<tr><td><strong>State & Cache Management</strong></td><td><strong>TanStack React Query v5</strong></td><td>Server-state caching, automatic cache invalidation, and background query revalidation.</td></tr>
+<tr><td><strong>Backend & Database</strong></td><td><strong>Supabase (PostgreSQL 15)</strong></td><td>Relational Postgres with native Row-Level Security (RLS), stored procedures, and triggers.</td></tr>
+<tr><td><strong>Authentication</strong></td><td><strong>Supabase Auth</strong></td><td>JWT-based authentication supporting Email/Password, OAuth providers (Google), and role claims.</td></tr>
+<tr><td><strong>Media & File Storage</strong></td><td><strong>Supabase Storage</strong></td><td>S3-compatible cloud object storage with path-level RLS policies for facility photo uploads.</td></tr>
+<tr><td><strong>Hosting & Edge Infrastructure</strong></td><td><strong>Vercel</strong></td><td>Global CDN distribution, automated continuous deployment from GitHub <code>main</code>, and edge functions.</td></tr>
+<tr><td><strong>Testing</strong></td><td><strong>Vitest + PGlite (In-Memory Postgres)</strong></td><td>Automated unit tests and end-to-end SQL trigger verification without external mock bloat.</td></tr>
+</table>
+<hr/>
+<h2>3. High-Level Architecture Diagram</h2>
+<pre><code>
++-----------------------------------------------------------------------------------+
+|                                  CLIENT LAYER                                     |
+|                                                                                   |
+|  [ Parent Portal ]             [ Provider Portal ]             [ Admin Portal ]   |
+|   - Search &amp; Filters            - Center &amp; Staff Management     - Approval Queue  |
+|   - Real-time Seats Left        - Booking Accept / Reject       - Staff Badge KYC |
+|   - Pickup Pass &amp; PIN           - PIN Verification Keypad       - KPI Analytics   |
+|   - Reviews &amp; Grievances        - Occupancy &amp; Revenue Charts    - Disputes Desk   |
++------------------------------------------+----------------------------------------+
+                                           | HTTPS / WSS
+                                           v
++-----------------------------------------------------------------------------------+
+|                        APPLICATION &amp; ROUTING LAYER (Vercel)                       |
+|                                                                                   |
+|   TanStack Start Server Engine / SSR &amp; Client Routing                             |
+|   - Type-safe file routes (`/_authenticated/dashboard`, `/centers/$id`, `/auth`)   |
+|   - Auth Guard Middleware (`requireSupabaseAuth`)                                 |
++------------------------------------------+----------------------------------------+
+                                           | Supabase Client SDK (PostgREST + RPC)
+                                           v
++-----------------------------------------------------------------------------------+
+|                         DATABASE &amp; SECURITY LAYER (Postgres)                      |
+|                                                                                   |
+|  +--------------------------------+  +-----------------------------------------+  |
+|  |     Row-Level Security (RLS)   |  |        Database Triggers (Guards)       |  |
+|  |  - `profiles`, `user_roles`    |  |  - `guard_booking()` (Capacity check)   |  |
+|  |  - `centers`, `caregivers`     |  |  - `guard_center_status()` (Re-review)  |  |
+|  |  - `bookings`, `disputes`      |  |  - `guard_caregiver_verified()` (Admin) |  |
+|  |  - `booking_pickup_codes`      |  |  - `refresh_center_rating()` (Reviews)  |  |
+|  +--------------------------------+  +-----------------------------------------+  |
+|                                                                                   |
+|  +--------------------------------+  +-----------------------------------------+  |
+|  |     Stored Procedures (RPC)    |  |          Object Storage (S3)            |  |
+|  |  - `seats_left()`              |  |  - `center-photos` bucket               |  |
+|  |  - `verify_pickup_code()`      |  |  - Path isolation: `&lt;center_id&gt;/&lt;file&gt;` |  |
+|  +--------------------------------+  +-----------------------------------------+  |
++-----------------------------------------------------------------------------------+
+</code></pre>
+<hr/>
+<h2>4. Database Schema & Data Models</h2>
+<h3>4.1 Core Entities</h3>
+<p>1. <strong><code>profiles</code></strong>: User identity metadata linked 1-to-1 with <code>auth.users(id)</code>.</p>
+<p>   - Columns: <code>id (uuid, PK)</code>, <code>full_name (text)</code>, <code>phone (text)</code>, <code>created_at (timestamptz)</code>.</p>
+<p>2. <strong><code>user_roles</code></strong>: Role-based access control.</p>
+<p>   - Enums: <code>'admin' | 'provider' | 'parent'</code>.</p>
+<p>   - The first account created automatically receives both <code>'admin'</code> and <code>'parent'</code> roles via trigger <code>handle_new_user()</code>.</p>
+<p>3. <strong><code>centers</code></strong>: Childcare facility listings.</p>
+<p>   - Columns: <code>id (uuid, PK)</code>, <code>owner_id (uuid)</code>, <code>name (text)</code>, <code>city (text)</code>, <code>address (text)</code>, <code>capacity (int)</code>, <code>timings (text[])</code>, <code>age_groups (text[])</code>, <code>hourly_price</code>, <code>daily_price</code>, <code>monthly_price</code>, <code>rating (numeric)</code>, <code>photo_path (text)</code>, <code>status ('pending' | 'approved' | 'rejected')</code>.</p>
+<p>4. <strong><code>caregivers</code></strong>: Individual staff members tied to a daycare facility.</p>
+<p>   - Columns: <code>id</code>, <code>center_id</code>, <code>name</code>, <code>role</code>, <code>experience_years</code>, <code>bio</code>, <code>verified (boolean)</code>.</p>
+<p>5. <strong><code>bookings</code></strong>: Booking transactions and scheduling records.</p>
+<p>   - Columns: <code>id</code>, <code>center_id</code>, <code>parent_id</code>, <code>child_name</code>, <code>age_group</code>, <code>plan ('hourly' | 'daily' | 'monthly')</code>, <code>quantity (int)</code>, <code>start_date (date)</code>, <code>end_date (date)</code>, <code>start_time (time)</code>, <code>total_price (int)</code>, <code>status ('pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled')</code>, <code>notes (text)</code>.</p>
+<p>6. <strong><code>booking_pickup_codes</code></strong>: Isolated cryptographic authentication credentials for child pick-up.</p>
+<p>   - Columns: <code>booking_id (uuid, PK)</code>, <code>code (text, 4-digit)</code>, <code>created_at (timestamptz)</code>.</p>
+<p>7. <strong><code>disputes</code></strong>: Grievance tracking for parental/provider conflict resolution.</p>
+<p>   - Columns: <code>id</code>, <code>booking_id</code>, <code>reporter_id</code>, <code>reason</code>, <code>details</code>, <code>status ('open' | 'resolved')</code>, <code>admin_note</code>, <code>created_at</code>, <code>resolved_at</code>.</p>
+<p>8. <strong><code>reviews</code></strong>: Verified customer satisfaction feedback.</p>
+<p>   - Columns: <code>id</code>, <code>center_id</code>, <code>parent_id</code>, <code>rating (1..5)</code>, <code>comment (text)</code>, <code>reviewer_name (text)</code>.</p>
+<hr/>
+<h2>5. Security Architecture & Database Integrity Guards</h2>
+<h3>5.1 Zero-Tamper Overbooking Guard (<code>guard_booking()</code>)</h3>
+<p>When a daycare attempts to transition a booking to <code>accepted</code>, the trigger executes:</p>
+<pre><code>
+SELECT d::date INTO full_day 
+FROM generate_series(OLD.start_date, OLD.end_date, interval '1 day') AS d
+WHERE (
+  SELECT count(*) FROM public.bookings b
+  WHERE b.center_id = OLD.center_id 
+    AND b.status = 'accepted' 
+    AND b.id &lt;&gt; OLD.id 
+    AND d::date BETWEEN b.start_date AND b.end_date
+) &gt;= c.capacity
+ORDER BY d LIMIT 1;
+
+IF full_day IS NOT NULL THEN 
+  RAISE EXCEPTION 'Center is full on % (capacity %)', to_char(full_day, 'DD Mon YYYY'), c.capacity;
+END IF;
+</code></pre>
+<p><strong>Why this matters:</strong> A 1-month booking starting on October 29 correctly locks 1 seat every single day through November 28. A single-day booking on November 10 cannot accidentally cause an overbooking.</p>
+<h3>5.2 Real-Time Availability RPC (<code>seats_left()</code>)</h3>
+<p>Calculates the minimum remaining seats across any span of days for a prospective booking without leaking private booking details:</p>
+<pre><code>
+CREATE OR REPLACE FUNCTION public.seats_left(_center_id uuid, _plan text, _start date, _quantity int)
+RETURNS int LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT GREATEST(c.capacity - COALESCE((
+    SELECT max(used) FROM (
+      SELECT (SELECT count(*) FROM public.bookings b
+              WHERE b.center_id = c.id AND b.status = 'accepted'
+                AND d::date BETWEEN b.start_date AND b.end_date) AS used
+      FROM generate_series(_start, public.booking_end_date(_plan, _start, LEAST(_quantity, 24)), interval '1 day') AS d
+    ) per_day
+  ), 0), 0)::int
+  FROM public.centers c
+  WHERE c.id = _center_id AND c.status = 'approved'
+$$;
+</code></pre>
+<h3>5.3 Cryptographic Pickup Verification Protocol</h3>
+<p>1. Upon booking acceptance, trigger <code>issue_pickup_code()</code> generates a pseudorandom 4-digit code stored in <code>booking_pickup_codes</code>.</p>
+<p>2. Row-Level Security policy <code>"parent reads own pickup code"</code> restricts <code>SELECT</code> strictly to <code>parent_id = auth.uid()</code>. Providers cannot read the code.</p>
+<p>3. At drop-off/pickup, the daycare enters the code via procedure <code>verify_pickup_code(_booking_id, _code)</code>:</p>
+<p>   - Compares the candidate code against the table using a <code>SECURITY DEFINER</code> function.</p>
+<p>   - Returns a simple boolean (<code>true</code> or <code>false</code>).</p>
+<p>   - If matched, the child handover is authenticated with zero credential leakage.</p>
+<h3>5.4 Anti-Tampering Re-Review Trigger (<code>guard_center_status()</code>)</h3>
+<p>If an approved facility owner alters core credentials (such as facility name, address, city, or safety certifications), the database trigger automatically demotes the facility's status back to <code>'pending'</code>, requiring administrator re-verification before further bookings can be accepted.</p>
+<hr/>
+<h2>6. Storage & Upload Architecture</h2>
+<li><strong>Bucket:</strong> <code>center-photos</code> (Public bucket, 5MB file cap, MIME restricted to JPEG/PNG/WebP).</li>
+<li><strong>Directory Isolation:</strong> Files must be prefixed with the center's UUID: <code><center_id>/<timestamp>.<ext></code>.</li>
+<li><strong>Database Constraint:</strong></li>
+<p>  ```sql</p>
+<p>  ALTER TABLE public.centers ADD CONSTRAINT centers_photo_path_check</p>
+<p>    CHECK (photo_path IS NULL OR photo_path LIKE id::text || '/%');</p>
+<p>  ```</p>
+<li><strong>Storage Policy:</strong></li>
+<p>  Users can only upload or delete files within directories where <code>c.owner_id = auth.uid()</code>.</p>
+<hr/>
+<h2>7. Quality Assurance & Automated Testing</h2>
+<p>The project maintains an automated multi-tier test harness:</p>
+<p>1. <strong>Frontend Integration Tests (<code>vitest</code>):</strong></p>
+<p>   - Validates client-side route mounting, navigation tree, and authentication state transitions.</p>
+<p>2. <strong>Postgres In-Memory Database Suite (<code>@electric-sql/pglite</code>):</strong></p>
+<p>   - Runs full SQL migrations against virtualized PostgreSQL.</p>
+<p>   - Tests overbooking prevention, overlapping date ranges, role-permission fences, rating recalculation triggers, and storage folder boundaries.</p>
+<p>   - <strong>Result:</strong> 100% test pass rate (26 Step-2 checks + 12 Step-3 submission checks).</p>
+<hr/>
+<h2>8. Deployment & CI/CD Pipeline</h2>
+<li><strong>Repository:</strong> Hosted on GitHub with branch protection on <code>main</code>.</li>
+<li><strong>Hosting Platform:</strong> Vercel edge deployment.</li>
+<li><strong>Build Command:</strong> <code>npm run build</code> (outputs optimized SSR and client bundles via Vite & Nitro).</li>
+<li><strong>Environment Isolation:</strong> Zero credentials checked into Git; <code>.env</code> keys managed securely via Vercel Environment Variables.</li>
+</body>
+</html>
